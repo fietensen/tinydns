@@ -70,3 +70,52 @@ impl Packet {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::protocol::packet::{record_type::RecordType, resource_record};
+
+    use super::*;
+
+    #[test]
+    fn test_packet_serialize_deserialize() {
+        let header = PacketHeader {
+            id: 0x1234,
+            flags: 0x0100,
+            qdcount: 1,
+            ancount: 1,
+            nscount: 1,
+            arcount: 1,
+        };
+
+        let question = Question::default()
+            .with_name("example.com".to_string())
+            .with_qtype(RecordType::A as u16)
+            .with_qclass(1);
+
+        let resource_record = resource_record::ResourceRecord::default()
+            .with_name("example.com".to_string())
+            .with_rtype(1)
+            .with_rclass(1)
+            .with_ttl(3600)
+            .with_rdlength(4)
+            .with_rdata(vec![192, 0, 2, 1]);
+
+        let packet = Packet {
+            header,
+            questions: vec![question],
+            answers: vec![resource_record.clone()],
+            authorities: vec![resource_record.clone()],
+            additionals: vec![resource_record.clone()],
+        };
+
+        let serialized = packet.serialize().expect("Failed to serialize packet");
+        let deserialized = Packet::deserialize(&serialized).expect("Failed to deserialize packet");
+
+        assert_eq!(packet.header, deserialized.header);
+        assert_eq!(packet.questions, deserialized.questions);
+        assert_eq!(packet.answers, deserialized.answers);
+        assert_eq!(packet.authorities, deserialized.authorities);
+        assert_eq!(packet.additionals, deserialized.additionals);
+    }
+}

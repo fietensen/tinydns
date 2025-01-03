@@ -1,8 +1,6 @@
-use std::default;
-
 use super::record_type::RecordType;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Question {
     name: String,
     qtype: u16,
@@ -17,7 +15,7 @@ impl Default for Question {
             name: String::new(),
             qtype: RecordType::A as u16,
             qclass: 1,
-            size: 5,
+            size: 6,
         }
     }
 }
@@ -25,7 +23,7 @@ impl Default for Question {
 impl Question {
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
-        self.size = 5 + self.name.len();
+        self.size = 6 + self.name.len();
         self
     }
 
@@ -54,18 +52,25 @@ impl Question {
     pub fn deserialize(buffer: &[u8]) -> Result<Question, Box<dyn std::error::Error>> {
         let mut offset = 0;
         let mut name = String::new();
+
         loop {
             let len = buffer[offset] as usize;
             if len == 0 {
                 break;
             }
+
             if !name.is_empty() {
                 name.push('.');
             }
-            name.push_str(std::str::from_utf8(&buffer[offset + 1..offset + 1 + len])?);
+
+            for i in 0..len {
+                name.push(buffer[offset + 1 + i] as char);
+            }
+
             offset += len + 1;
         }
         offset += 1;
+
         let qtype = u16::from_be_bytes([buffer[offset], buffer[offset + 1]]);
         offset += 2;
         let qclass = u16::from_be_bytes([buffer[offset], buffer[offset + 1]]);

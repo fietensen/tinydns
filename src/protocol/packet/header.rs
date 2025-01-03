@@ -4,7 +4,7 @@ use std::fmt::{Debug, Formatter};
 
 use super::flags::HeaderFlags;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, PartialEq)]
 pub struct PacketHeader {
     pub id: u16,
     pub flags: u16,

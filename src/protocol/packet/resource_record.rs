@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ResourceRecord {
     name: String,
     rtype: u16,
@@ -18,7 +18,7 @@ impl Default for ResourceRecord {
             ttl: 0,
             rdlength: 0,
             rdata: Vec::new(),
-            size: 11,
+            size: 12,
         }
     }
 }
@@ -26,7 +26,7 @@ impl Default for ResourceRecord {
 impl ResourceRecord {
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
-        self.size = 11 + self.name.len();
+        self.size = 12 + self.name.len();
         self
     }
 
@@ -52,7 +52,7 @@ impl ResourceRecord {
 
     pub fn with_rdata(mut self, rdata: Vec<u8>) -> Self {
         self.rdata = rdata;
-        self.size = 11 + self.name.len() + self.rdata.len();
+        self.size = 12 + self.name.len() + self.rdata.len();
         self
     }
 
