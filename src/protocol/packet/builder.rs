@@ -22,6 +22,16 @@ impl PacketBuilder {
         }
     }
 
+    pub fn from_packet(packet: Packet) -> Self {
+        PacketBuilder {
+            header: packet.header,
+            questions: packet.questions,
+            answers: packet.answers,
+            authorities: packet.authorities,
+            additionals: packet.additionals,
+        }
+    }
+
     pub fn with_id(mut self, id: u16) -> Self {
         self.header.id = id;
         self

@@ -71,36 +71,64 @@ impl ResourceRecord {
         Ok(buf)
     }
 
-    pub fn deserialize(buffer: &[u8]) -> Result<ResourceRecord, Box<dyn std::error::Error>> {
-        let mut offset = 0;
+    pub fn deserialize(
+        buffer: &[u8],
+        offset: &mut usize,
+    ) -> Result<ResourceRecord, Box<dyn std::error::Error>> {
         let mut name = String::new();
-        loop {
-            let len = buffer[offset] as usize;
-            if len == 0 {
-                break;
+
+        if buffer[*offset] & 0xc0 == 0xc0 {
+            let pointer = u16::from_be_bytes([buffer[*offset], buffer[*offset + 1]]) & 0x3FFF;
+            let mut loop_offset = pointer as usize;
+
+            loop {
+                let len = buffer[loop_offset] as usize;
+                if len == 0 {
+                    break;
+                }
+                if !name.is_empty() {
+                    name.push('.');
+                }
+                name.push_str(std::str::from_utf8(
+                    &buffer[loop_offset + 1..loop_offset + 1 + len],
+                )?);
+                loop_offset += len + 1;
             }
-            if !name.is_empty() {
-                name.push('.');
+
+            *offset += 2;
+        } else {
+            loop {
+                let len = buffer[*offset] as usize;
+                if len == 0 {
+                    *offset += 1;
+                    break;
+                }
+                if !name.is_empty() {
+                    name.push('.');
+                }
+                name.push_str(std::str::from_utf8(
+                    &buffer[*offset + 1..*offset + 1 + len],
+                )?);
+                *offset += len + 1;
             }
-            name.push_str(std::str::from_utf8(&buffer[offset + 1..offset + 1 + len])?);
-            offset += len + 1;
         }
-        offset += 1;
-        let rtype = u16::from_be_bytes([buffer[offset], buffer[offset + 1]]);
-        offset += 2;
-        let rclass = u16::from_be_bytes([buffer[offset], buffer[offset + 1]]);
-        offset += 2;
+        let rtype = u16::from_be_bytes([buffer[*offset], buffer[*offset + 1]]);
+        *offset += 2;
+        let rclass = u16::from_be_bytes([buffer[*offset], buffer[*offset + 1]]);
+        *offset += 2;
         let ttl = u32::from_be_bytes([
-            buffer[offset],
-            buffer[offset + 1],
-            buffer[offset + 2],
-            buffer[offset + 3],
+            buffer[*offset],
+            buffer[*offset + 1],
+            buffer[*offset + 2],
+            buffer[*offset + 3],
         ]);
-        offset += 4;
-        let rdlength = u16::from_be_bytes([buffer[offset], buffer[offset + 1]]);
-        offset += 2;
-        let rdata = buffer[offset..offset + rdlength as usize].to_vec();
-        let size = offset + rdlength as usize;
+        *offset += 4;
+        let rdlength = u16::from_be_bytes([buffer[*offset], buffer[*offset + 1]]);
+        *offset += 2;
+        let rdata = buffer[*offset..*offset + rdlength as usize].to_vec();
+        *offset += rdlength as usize;
+
+        let size = 12 + name.len() + rdata.len();
 
         Ok(ResourceRecord {
             name,

@@ -1,4 +1,6 @@
-use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
+
+use serde::Serialize;
 
 #[derive(Copy, Clone, Default, Debug)]
 #[repr(u16)]
@@ -49,7 +51,7 @@ impl ResponseCode {
 }
 
 #[repr(u16)]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub enum Flags {
     QR = 1 << 15,
     AA = 1 << 10,
@@ -62,7 +64,7 @@ pub enum Flags {
     NULL = 0,
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct HeaderFlags(OpCode, u16, ResponseCode);
 
 impl HeaderFlags {
@@ -85,8 +87,23 @@ impl HeaderFlags {
         self
     }
 
+    pub fn without_flag(mut self, flag: Flags) -> Self {
+        self.1 &= !(flag as u16);
+        self
+    }
+
     pub fn serialize(&self) -> u16 {
         ((self.0 as u16) << 11) | self.1 | ((self.2 as u16) << 0)
+    }
+}
+
+impl Debug for HeaderFlags {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HeaderFlags")
+            .field("opcode", &self.0)
+            .field("flags", &FlagsVec::from(self.1))
+            .field("rcode", &self.2)
+            .finish()
     }
 }
 
@@ -106,5 +123,30 @@ impl From<u16> for HeaderFlags {
             flags & 0b11111111111,
             ResponseCode::from_u16(flags & 0b1111),
         )
+    }
+}
+
+#[derive(Debug)]
+pub struct FlagsVec(Vec<Flags>);
+
+impl From<u16> for FlagsVec {
+    fn from(flags: u16) -> Self {
+        let mut vec = Vec::new();
+        if flags & Flags::QR as u16 != 0 {
+            vec.push(Flags::QR);
+        }
+        if flags & Flags::AA as u16 != 0 {
+            vec.push(Flags::AA);
+        }
+        if flags & Flags::TC as u16 != 0 {
+            vec.push(Flags::TC);
+        }
+        if flags & Flags::RD as u16 != 0 {
+            vec.push(Flags::RD);
+        }
+        if flags & Flags::RA as u16 != 0 {
+            vec.push(Flags::RA);
+        }
+        FlagsVec(vec)
     }
 }

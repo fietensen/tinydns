@@ -1,6 +1,6 @@
 use super::{header::PacketHeader, question::Question, resource_record::ResourceRecord};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Packet {
     pub header: PacketHeader,
     pub questions: Vec<Question>,
@@ -35,29 +35,25 @@ impl Packet {
 
         let mut questions = Vec::new();
         for _ in 0..header.qdcount {
-            let question = Question::deserialize(&buffer[offset..])?;
-            offset += question.size();
+            let question = Question::deserialize(&buffer, &mut offset)?;
             questions.push(question);
         }
 
         let mut answers = Vec::new();
         for _ in 0..header.ancount {
-            let answer = ResourceRecord::deserialize(&buffer[offset..])?;
-            offset += answer.size();
+            let answer = ResourceRecord::deserialize(&buffer, &mut offset)?;
             answers.push(answer);
         }
 
         let mut authorities = Vec::new();
         for _ in 0..header.nscount {
-            let authority = ResourceRecord::deserialize(&buffer[offset..])?;
-            offset += authority.size();
+            let authority = ResourceRecord::deserialize(&buffer, &mut offset)?;
             authorities.push(authority);
         }
 
         let mut additionals = Vec::new();
         for _ in 0..header.arcount {
-            let additional = ResourceRecord::deserialize(&buffer[offset..])?;
-            offset += additional.size();
+            let additional = ResourceRecord::deserialize(&buffer, &mut offset)?;
             additionals.push(additional);
         }
 
