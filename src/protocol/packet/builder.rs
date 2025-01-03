@@ -1,5 +1,6 @@
 use super::{
-    header::PacketHeader, packet::Packet, question::Question, resource_record::ResourceRecord,
+    flags::HeaderFlags, header::PacketHeader, packet::Packet, question::Question,
+    resource_record::ResourceRecord,
 };
 
 pub struct PacketBuilder {
@@ -26,8 +27,8 @@ impl PacketBuilder {
         self
     }
 
-    pub fn with_flags(mut self, flags: u16) -> Self {
-        self.header.flags = flags;
+    pub fn with_flags(mut self, flags: HeaderFlags) -> Self {
+        self.header.flags = flags.serialize();
         self
     }
 
@@ -51,7 +52,12 @@ impl PacketBuilder {
         self
     }
 
-    pub fn build(self) -> Packet {
+    pub fn build(mut self) -> Packet {
+        self.header.qdcount = self.questions.len() as u16;
+        self.header.ancount = self.answers.len() as u16;
+        self.header.nscount = self.authorities.len() as u16;
+        self.header.arcount = self.additionals.len() as u16;
+
         Packet {
             header: self.header,
             questions: self.questions,

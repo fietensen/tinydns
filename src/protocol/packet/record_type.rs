@@ -1,5 +1,5 @@
 pub enum RecordType {
-    A,
+    A = 1,
     NS,
     MD,
     MF,

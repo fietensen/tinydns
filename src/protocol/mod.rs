@@ -1,3 +1,1 @@
-mod packet;
-
-pub use packet::PacketBuilder;
+pub mod packet;

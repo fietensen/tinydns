@@ -1,5 +1,6 @@
 use super::{header::PacketHeader, question::Question, resource_record::ResourceRecord};
 
+#[derive(Debug)]
 pub struct Packet {
     pub header: PacketHeader,
     pub questions: Vec<Question>,
@@ -25,5 +26,47 @@ impl Packet {
             buffer.extend(additional.serialize()?);
         }
         Ok(buffer)
+    }
+
+    pub fn deserialize(buffer: &[u8]) -> Result<Packet, Box<dyn std::error::Error>> {
+        let mut offset = 0;
+        let header = PacketHeader::deserialize(&buffer[offset..])?;
+        offset += std::mem::size_of::<PacketHeader>();
+
+        let mut questions = Vec::new();
+        for _ in 0..header.qdcount {
+            let question = Question::deserialize(&buffer[offset..])?;
+            offset += question.size();
+            questions.push(question);
+        }
+
+        let mut answers = Vec::new();
+        for _ in 0..header.ancount {
+            let answer = ResourceRecord::deserialize(&buffer[offset..])?;
+            offset += answer.size();
+            answers.push(answer);
+        }
+
+        let mut authorities = Vec::new();
+        for _ in 0..header.nscount {
+            let authority = ResourceRecord::deserialize(&buffer[offset..])?;
+            offset += authority.size();
+            authorities.push(authority);
+        }
+
+        let mut additionals = Vec::new();
+        for _ in 0..header.arcount {
+            let additional = ResourceRecord::deserialize(&buffer[offset..])?;
+            offset += additional.size();
+            additionals.push(additional);
+        }
+
+        Ok(Packet {
+            header,
+            questions,
+            answers,
+            authorities,
+            additionals,
+        })
     }
 }
