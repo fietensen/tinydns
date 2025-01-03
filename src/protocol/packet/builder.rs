@@ -26,38 +26,8 @@ impl PacketBuilder {
         self
     }
 
-    pub fn with_qr(mut self, qr: u16) -> Self {
-        self.header.flags |= qr << 15;
-        self
-    }
-
-    pub fn with_opcode(mut self, opcode: u16) -> Self {
-        self.header.flags |= opcode << 11;
-        self
-    }
-
-    pub fn with_aa(mut self, aa: u16) -> Self {
-        self.header.flags |= aa << 10;
-        self
-    }
-
-    pub fn with_tc(mut self, tc: u16) -> Self {
-        self.header.flags |= tc << 9;
-        self
-    }
-
-    pub fn with_rd(mut self, rd: u16) -> Self {
-        self.header.flags |= rd << 8;
-        self
-    }
-
-    pub fn with_ra(mut self, ra: u16) -> Self {
-        self.header.flags |= ra << 7;
-        self
-    }
-
-    pub fn with_rcode(mut self, rcode: u16) -> Self {
-        self.header.flags |= rcode;
+    pub fn with_flags(mut self, flags: u16) -> Self {
+        self.header.flags = flags;
         self
     }
 

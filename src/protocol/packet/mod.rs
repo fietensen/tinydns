@@ -1,4 +1,5 @@
 mod builder;
+mod flags;
 mod header;
 mod packet;
 mod question;
