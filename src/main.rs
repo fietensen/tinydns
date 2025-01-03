@@ -1,3 +1,6 @@
+mod protocol;
+
 fn main() {
-    println!("Hello, world!");
+    let pkt = protocol::PacketBuilder::new().build().serialize().unwrap();
+    println!("{:?}", pkt);
 }
