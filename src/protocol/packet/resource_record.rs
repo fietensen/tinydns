@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Clone)]
+use super::RecordType;
+
+#[derive(PartialEq, Clone)]
 pub struct ResourceRecord {
     name: String,
     rtype: u16,
@@ -23,6 +25,18 @@ impl Default for ResourceRecord {
     }
 }
 
+impl std::fmt::Debug for ResourceRecord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ResourceRecord")
+            .field("name", &self.name)
+            .field("rtype", &RecordType::from(self.rtype))
+            .field("rclass", &self.rclass)
+            .field("ttl", &self.ttl)
+            .field("rdlength", &self.rdlength)
+            .finish()
+    }
+}
+
 impl ResourceRecord {
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
@@ -30,8 +44,8 @@ impl ResourceRecord {
         self
     }
 
-    pub fn with_rtype(mut self, rtype: u16) -> Self {
-        self.rtype = rtype;
+    pub fn with_rtype(mut self, rtype: RecordType) -> Self {
+        self.rtype = rtype.into();
         self
     }
 
@@ -45,12 +59,8 @@ impl ResourceRecord {
         self
     }
 
-    pub fn with_rdlength(mut self, rdlength: u16) -> Self {
-        self.rdlength = rdlength;
-        self
-    }
-
     pub fn with_rdata(mut self, rdata: Vec<u8>) -> Self {
+        self.rdlength = rdata.len() as u16;
         self.rdata = rdata;
         self.size = 12 + self.name.len() + self.rdata.len();
         self
@@ -143,5 +153,25 @@ impl ResourceRecord {
 
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn rtype(&self) -> RecordType {
+        self.rtype.into()
+    }
+
+    pub fn rclass(&self) -> u16 {
+        self.rclass
+    }
+
+    pub fn ttl(&self) -> u32 {
+        self.ttl
+    }
+
+    pub fn rdata(&self) -> Vec<u8> {
+        self.rdata.clone()
     }
 }

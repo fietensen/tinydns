@@ -91,10 +91,9 @@ mod tests {
 
         let resource_record = resource_record::ResourceRecord::default()
             .with_name("example.com".to_string())
-            .with_rtype(1)
+            .with_rtype(RecordType::A)
             .with_rclass(1)
             .with_ttl(3600)
-            .with_rdlength(4)
             .with_rdata(vec![192, 0, 2, 1]);
 
         let packet = Packet {

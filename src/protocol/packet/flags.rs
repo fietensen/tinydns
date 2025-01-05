@@ -65,7 +65,7 @@ pub enum Flags {
 }
 
 #[derive(Default)]
-pub struct HeaderFlags(OpCode, u16, ResponseCode);
+pub struct HeaderFlags(pub OpCode, pub u16, pub ResponseCode);
 
 impl HeaderFlags {
     pub fn new() -> Self {

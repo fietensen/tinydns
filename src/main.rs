@@ -1,3 +1,4 @@
+mod nameserver;
 mod protocol;
 mod resolver;
 mod server;

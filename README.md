@@ -11,3 +11,7 @@ evaluation of query metrics.
 ## Motivation
 
 The main motivation for tinydns is the capability to block troublesome / malicious websites in home networks.
+
+### To-Do
+- [ ] Add truncation support for large datagrams
+- [ ] Add Message Compression

@@ -1,6 +1,9 @@
-use crate::protocol::packet::{
-    flags::{Flags, HeaderFlags, ResponseCode},
-    Packet, PacketBuilder,
+use crate::protocol::{
+    answer::AnswerEntry,
+    packet::{
+        flags::{Flags, HeaderFlags, ResponseCode},
+        Packet, PacketBuilder, Question,
+    },
 };
 
 #[derive(Default)]
@@ -39,22 +42,7 @@ impl Resolver {
         Ok(packet_builder.build().serialize()?)
     }
 
-    pub async fn resolve(&self, packet: Packet) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        for fallback in &self.fallback_servers {
-            let response = self.query_fallback(packet.clone(), fallback.clone()).await;
-            if response.is_ok() {
-                return response;
-            }
-        }
-
-        // failed to resolve packet
-        Ok(PacketBuilder::from_packet(packet.clone())
-            .with_flags(
-                HeaderFlags::from(packet.header.flags)
-                    .with_rcode(ResponseCode::ServerFailure)
-                    .with_flag(Flags::QR),
-            )
-            .build()
-            .serialize()?)
+    pub async fn resolve(&self, questions: Vec<Question>) -> Option<AnswerEntry> {
+        None
     }
 }

@@ -9,3 +9,7 @@ mod resource_record;
 pub use builder::PacketBuilder;
 pub use packet::Packet;
 pub use question::Question;
+pub use record_type::RecordType;
+pub use resource_record::ResourceRecord;
+
+pub use header::PacketHeader;

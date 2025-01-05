@@ -5,7 +5,6 @@ pub struct Question {
     name: String,
     qtype: u16,
     qclass: u16,
-
     size: usize,
 }
 
@@ -58,7 +57,6 @@ impl Question {
         if buffer[*offset] & 0xc0 == 0xc0 {
             let pointer = u16::from_be_bytes([buffer[*offset], buffer[*offset + 1]]) & 0x3FFF;
             let mut loop_offset = pointer as usize;
-            println!("Found ref question");
             loop {
                 let len = buffer[loop_offset] as usize;
                 if len == 0 {
@@ -107,6 +105,18 @@ impl Question {
 
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn qtype(&self) -> RecordType {
+        RecordType::from(self.qtype)
+    }
+
+    pub fn qclass(&self) -> u16 {
+        self.qclass
     }
 }
 

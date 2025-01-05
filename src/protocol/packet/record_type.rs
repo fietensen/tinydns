@@ -54,3 +54,9 @@ impl From<u16> for RecordType {
         }
     }
 }
+
+impl Into<u16> for RecordType {
+    fn into(self) -> u16 {
+        self as u16
+    }
+}
