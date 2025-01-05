@@ -1,4 +1,4 @@
-use super::resolver::Resolver;
+use crate::resolver::Resolver;
 
 pub struct ServerConfig {
     udp_port: u16,
