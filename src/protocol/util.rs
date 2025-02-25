@@ -7,6 +7,10 @@ pub fn encode_domain(mut name: String) -> Result<Vec<u8>, Box<dyn std::error::Er
         name = sstrip.to_string();
     }
 
+    if name.len() == 0 {
+        return Ok(vec![0]);
+    }
+
     let mut buf = Vec::new();
     for part in name.split('.') {
         if part.len() == 0 {
@@ -17,6 +21,10 @@ pub fn encode_domain(mut name: String) -> Result<Vec<u8>, Box<dyn std::error::Er
     }
     buf.push(0);
     Ok(buf)
+}
+
+pub fn get_upzone(name: String) -> String {
+    name.split(".").skip(1).collect::<Vec<&str>>().join(".")
 }
 
 #[cfg(test)]
@@ -48,5 +56,20 @@ mod tests {
 
         let encoded = encode_domain("example..com".to_string());
         assert!(encoded.is_err());
+
+        let encoded = encode_domain(".".to_string());
+        assert!(encoded.is_ok());
+        assert_eq!(encoded.unwrap(), vec![0]);
+    }
+
+    fn test_get_upzone() {
+        debug_assert_eq!(
+            get_upzone("sub.example.com".to_string()),
+            "example.com".to_string()
+        );
+
+        debug_assert_eq!(get_upzone("example.com".to_string()), "com".to_string());
+
+        debug_assert_eq!(get_upzone("com".to_string()), ".".to_string());
     }
 }

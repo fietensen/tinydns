@@ -16,6 +16,7 @@ pub async fn send_packet(
     packet: Packet,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = packet.serialize();
+
     match response {
         Ok(data) => {
             if let Err(e) = server.send_to(&data, client).await {
@@ -66,7 +67,8 @@ pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::
                             )
                             .with_id(header.id)
                             .build(),
-                    );
+                    )
+                    .await;
                 } else {
                     // fallback to only query ID
                     let query_id = u16::from_be_bytes([data[0], data[1]]);
@@ -83,7 +85,8 @@ pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::
                             )
                             .with_id(query_id)
                             .build(),
-                    );
+                    )
+                    .await;
                 }
                 continue;
             }
@@ -100,13 +103,15 @@ pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::
                         .with_flags(
                             HeaderFlags::new()
                                 .with_opcode(HeaderFlags::from(packet_deserialized.header.flags).0)
-                                .with_rcode(ResponseCode::NoError)
+                                .with_rcode(ResponseCode::NameError)
                                 .with_flag(Flags::QR)
                                 .with_flag(Flags::RA),
                         )
                         .with_id(packet_deserialized.header.id)
+                        .with_qentries(packet_deserialized.questions)
                         .build(),
-                );
+                )
+                .await;
             }
         }
     }

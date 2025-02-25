@@ -4,6 +4,6 @@ use super::packet::ResourceRecord;
 pub struct AnswerEntry {
     pub resource: Option<ResourceRecord>,
     pub authoritive: bool,
-    pub authority: Option<String>,
+    pub authority: Option<ResourceRecord>,
     pub additional: Vec<ResourceRecord>,
 }

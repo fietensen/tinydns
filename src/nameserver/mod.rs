@@ -6,6 +6,6 @@ use crate::{
 /*
     Tries to answer DNS question locally
 */
-pub fn try_answer(question: Question, config: &ServerConfig) -> Option<AnswerEntry> {
+pub async fn try_answer(question: Question, config: &ServerConfig) -> Option<AnswerEntry> {
     None
 }
