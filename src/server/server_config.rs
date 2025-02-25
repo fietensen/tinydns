@@ -1,22 +1,24 @@
-use crate::resolver::Resolver;
+use crate::{nameserver::Nameserver, resolver::Resolver};
 
-pub struct ServerConfig {
+pub struct ServerConfig<'a> {
     udp_port: u16,
     listen_addr: String,
     resolver: Resolver,
+    nameserver: Option<Nameserver<'a>>
 }
 
-impl Default for ServerConfig {
+impl<'a> Default for ServerConfig<'a> {
     fn default() -> Self {
         ServerConfig {
             udp_port: 53,
             listen_addr: "127.0.0.1".to_string(),
             resolver: Resolver::default(),
+            nameserver: None,
         }
     }
 }
 
-impl ServerConfig {
+impl<'a> ServerConfig<'a> {
     pub fn with_udp_port(mut self, port: u16) -> Self {
         self.udp_port = port;
         self
@@ -32,6 +34,11 @@ impl ServerConfig {
         self
     }
 
+    pub fn with_nameserver(mut self, nameserver: Nameserver<'a>) -> Self {
+        self.nameserver = Some(nameserver);
+        self
+    }
+
     pub fn udp_port(&self) -> u16 {
         self.udp_port
     }
@@ -42,5 +49,9 @@ impl ServerConfig {
 
     pub fn resolver(&self) -> &Resolver {
         &self.resolver
+    }
+
+    pub fn nameserver(&self) -> Option<&Nameserver<'a>> {
+        self.nameserver.as_ref()
     }
 }

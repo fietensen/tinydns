@@ -15,3 +15,8 @@ The main motivation for tinydns is the capability to block troublesome / malicio
 ### To-Do
 - [ ] Add truncation support for large datagrams
 - [ ] Add Message Compression
+
+Find more TODOs by running
+```sh
+grep --include="*.rs" -rn "TODO"
+```

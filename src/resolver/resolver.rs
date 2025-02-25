@@ -5,8 +5,7 @@ use crate::{
             flags::{Flags, HeaderFlags, OpCode, ResponseCode},
             Packet, PacketBuilder, Question,
         },
-    },
-    server::ServerConfig,
+    }, server::ServerConfig
 };
 
 #[derive(Default)]
@@ -50,6 +49,7 @@ impl Resolver {
     }
 
     pub async fn resolve(&self, questions: Vec<Question>) -> Option<AnswerEntry> {
+        // TODO: Implement resolving questions
         None
     }
 
@@ -64,7 +64,7 @@ impl Resolver {
                     .with_rcode(ResponseCode::NoError)
                     .with_flag(Flags::RD),
             )
-            // To-Do: How should this be generated?
+            // TODO: How should this be generated?
             .with_id(0x0001)
             .with_qentries(questions)
             .build();
@@ -111,7 +111,8 @@ impl Resolver {
     /*
         Tries to retrieve zone authority
     */
-    pub async fn get_zoneauthority(&self, zone: String, config: &ServerConfig) -> AnswerEntry {
+    pub async fn get_zoneauthority<'a>(&self, zone: String, config: &ServerConfig<'a>) -> AnswerEntry {
+        // TODO: resolve zone authority
         AnswerEntry::default()
     }
 }

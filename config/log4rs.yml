@@ -4,19 +4,18 @@ appenders:
   stdout:
     kind: console
     encoder:
-      pattern: "{d(%Y-%m-%d %H:%M:%S)} [{l}] {M} - {m}{n}"
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} [{l}] {t} - {m}{n}"
   
-  dns_requests:
+  filelog:
     kind: file
-    path: "log/dns_requests.log"
+    path: "log/tinydns.log"
 
 root:
-  level: trace
+  level: error
   appenders:
     - stdout
+    - filelog
 
 loggers:
-  tinydns::server::handle_packet:
-    level: info
-    appenders:
-      - dns_requests
+  tinydns:
+    level: trace

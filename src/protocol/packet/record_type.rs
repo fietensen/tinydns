@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[repr(u16)]
 pub enum RecordType {
     A = 1,

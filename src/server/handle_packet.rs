@@ -1,57 +1,63 @@
-use crate::{
-    nameserver,
-    protocol::{
+use crate::protocol::{
         answer::AnswerEntry,
         packet::{
             flags::{Flags, HeaderFlags, ResponseCode},
             Packet, PacketBuilder, Question, ResourceRecord,
         },
         util,
-    },
-};
+    };
 
 use super::ServerConfig;
 
 /*
     Answer single question or return authority for iterative querying
 */
-pub async fn answer_question(question: Question, config: &ServerConfig) -> AnswerEntry {
-    if let Some(answer) = nameserver::try_answer(question.clone(), config).await {
-        // Let NS answer question
-        answer
-    } else {
-        // Return zone authority if answer couldn't be found
-        config
-            .resolver()
-            .get_zoneauthority(util::get_upzone(question.name()), config)
-            .await
+pub async fn answer_question<'a>(question: Question, config: &ServerConfig<'a>) -> AnswerEntry {
+    if let Some(nameserver) = config.nameserver() {
+        if let Some(answer) = nameserver.try_answer(question.clone()).await {
+            log::info!("Answered question locally");
+            return answer;
+        }
     }
+
+    config
+        .resolver()
+        .get_zoneauthority(util::get_upzone(question.name()), config)
+        .await
 }
 
 /*
     Batch-answer questions. Recursion should be desired.
 */
-pub async fn answer_batch(questions: Vec<Question>, config: &ServerConfig) -> Vec<AnswerEntry> {
+pub async fn answer_batch<'a>(questions: Vec<Question>, config: &ServerConfig<'a>) -> Vec<AnswerEntry> {
     let mut delegated_questions = Vec::new();
     let mut answers = Vec::new();
 
-    for question in questions.clone() {
-        if let Some(answer) = nameserver::try_answer(question.clone(), config).await {
-            answers.push(answer);
-        } else {
-            delegated_questions.push(question);
+    if let Some(nameserver) = config.nameserver() {
+        // Resolve all locally answerable questions using our nameserver, delegate the rest
+        for question in questions.clone() {
+            if let Some(answer) = nameserver.try_answer(question.clone()).await {
+                answers.push(answer);
+            } else {
+                delegated_questions.push(question);
+            }
         }
+    } else {
+        // No nameserver configured, delegate ALL questions
+        log::trace!("Resolving {} question:s recursively", delegated_questions.len());
+        answers.extend(config.resolver().resolve_recursive(questions).await);
+        return answers;
     }
-    log::trace!("Resolving {} question:s recursively", delegated_questions.len());
+    
     answers.extend(config.resolver().resolve_recursive(delegated_questions).await);
 
-    log::info!("Resolved {} quesions", questions.len());
+    log::info!("Resolved {} questions", questions.len());
     answers
 }
 
-pub async fn handle_packet(
+pub async fn handle_packet<'a>(
     packet: Packet,
-    config: &ServerConfig,
+    config: &ServerConfig<'a>,
 ) -> Result<Packet, Box<dyn std::error::Error>> {
     let questions = packet.clone().questions;
     let mut authoritive = true;

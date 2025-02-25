@@ -29,7 +29,7 @@ pub async fn send_packet(
     Ok(())
 }
 
-pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std::error::Error>> {
 
     let server =
         tokio::net::UdpSocket::bind(format!("{}:{}", config.listen_addr(), config.udp_port()))
