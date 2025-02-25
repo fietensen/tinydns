@@ -107,7 +107,7 @@ pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std:
                                 .with_opcode(HeaderFlags::from(packet_deserialized.header.flags).0)
                                 .with_rcode(ResponseCode::NameError)
                                 .with_flag(Flags::QR)
-                                .with_flag(Flags::RA),
+                                .with_flag(Flags::RA)
                         )
                         .with_id(packet_deserialized.header.id)
                         .with_qentries(packet_deserialized.questions)

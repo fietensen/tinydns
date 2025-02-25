@@ -49,7 +49,9 @@ pub async fn answer_batch<'a>(questions: Vec<Question>, config: &ServerConfig<'a
         return answers;
     }
     
-    answers.extend(config.resolver().resolve_recursive(delegated_questions).await);
+    if !delegated_questions.is_empty() {
+        answers.extend(config.resolver().resolve_recursive(delegated_questions).await);
+    }
 
     log::info!("Resolved {} questions", questions.len());
     answers
@@ -67,6 +69,7 @@ pub async fn handle_packet<'a>(
     let recursion_desired =
         HeaderFlags::from(packet.header.flags).1 & (Flags::RD as u16) == (Flags::RD as u16);
 
+    // TODO: RFC 2308, Section 2.2 Compliance: (Case: No Data / Record Entry doesn't exist) -> Return SOA
     log::trace!("Handling {} question:s", questions.len());
     if recursion_desired {
         let answers = answer_batch(questions.clone(), config).await;

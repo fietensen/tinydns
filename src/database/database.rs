@@ -1,7 +1,3 @@
-use crate::protocol::packet::ResourceRecord;
-
-use super::record_query::RecordQuery;
-
 pub struct Database {
     sqlite_pool: sqlx::Pool<sqlx::Sqlite>,
 }
@@ -20,7 +16,21 @@ impl Database {
         })
     }
 
-    pub async fn query_record(&self, record_query: &RecordQuery) -> Option<ResourceRecord> {
-        Some(record_query._fetch_one(&self.sqlite_pool).await?.serialize())
+    pub async fn init_mem() -> Result<Self, Box<dyn std::error::Error>> {
+        let db_pool = sqlx::SqlitePool::connect("sqlite::memory:").await?;
+
+        sqlx::migrate!("./migrations").run(&db_pool).await?;
+
+        Ok(Database{
+            sqlite_pool: db_pool,
+        })
+    }
+
+    pub fn config_dns_tbl(&self) -> String {
+        "user_dns_records".to_string()
+    }
+
+    pub fn get_pool(&self) -> &sqlx::Pool<sqlx::Sqlite> {
+        &self.sqlite_pool
     }
 }

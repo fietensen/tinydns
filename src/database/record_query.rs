@@ -9,7 +9,7 @@ pub struct RecordQuery {
 }
 
 #[derive(sqlx::FromRow)]
-pub struct RecordResult {
+pub struct RecordEntity {
     id: u64,
     domain_name: String,
     record_type: u16,
@@ -21,13 +21,29 @@ pub struct RecordResult {
     is_active: bool
 }
 
+impl Default for RecordEntity {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            domain_name: String::default(),
+            record_type: 0,
+            record_value: Vec::default(),
+            ttl: 3600,
+            priority: None,
+            created_at: None,
+            updated_at: None,
+            is_active: false
+        }
+    }
+}
+
 impl RecordQuery {
-    pub async fn _fetch_one(&self, db: &sqlx::Pool<sqlx::Sqlite>) -> Option<RecordResult> {
+    pub async fn _fetch_one(&self, db: &sqlx::Pool<sqlx::Sqlite>, tbl_name: String) -> Option<RecordEntity> {
         if !self.valid {
             return None;
         }
 
-        let mut builder = sqlx::QueryBuilder::new("SELECT * FROM user_dns_records WHERE 1=1");
+        let mut builder = sqlx::QueryBuilder::new(format!("SELECT * FROM {} WHERE 1=1", tbl_name));
         
         if let Some(domain_name) = self.domain_name() {
             builder.push(" AND domain_name = ").push_bind(domain_name);
@@ -68,7 +84,19 @@ impl RecordQuery {
 
 }
 
-impl RecordResult {
+impl RecordEntity {
+    pub async fn _insert(self, db: &sqlx::Pool<sqlx::Sqlite>, tbl_name: String) -> Result<(), Box<dyn std::error::Error>> {
+        sqlx::query(&format!("INSERT INTO {}(domain_name, record_type, record_value, ttl, priority) VALUES (?, ?, ?, ?, ?);", tbl_name))
+            .bind(self.domain_name)
+            .bind(self.record_type)
+            .bind(self.record_value)
+            .bind(self.ttl)
+            .bind(self.priority)
+            .execute(db).await?;
+
+        Ok(())
+    }
+
     pub fn serialize(self) -> ResourceRecord {
         // TODO: if the name is not set, the packet will
         //      still successfully serialize (but be malformed)
@@ -77,5 +105,30 @@ impl RecordResult {
             .with_rdata(self.record_value)
             .with_rclass(1) // TODO: this shouldn't be hardcoded
             .with_ttl(self.ttl)
+    }
+
+    pub fn with_domain_name(mut self, domain_name: String) -> Self {
+        self.domain_name = domain_name;
+        self
+    }
+
+    pub fn with_record_type(mut self, record_type: RecordType) -> Self {
+        self.record_type = record_type.into();
+        self
+    }
+
+    pub fn with_record_value(mut self, record_value: Vec<u8>) -> Self {
+        self.record_value = record_value;
+        self
+    }
+
+    pub fn with_ttl(mut self, ttl: u32) -> Self {
+        self.ttl = ttl;
+        self
+    }
+
+    pub fn with_priority(mut self, priority: u32) -> Self {
+        self.priority = Some(priority);
+        self
     }
 }

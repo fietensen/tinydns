@@ -1,3 +1,5 @@
+use crate::protocol::util;
+
 use super::RecordType;
 
 #[derive(PartialEq, Clone)]
@@ -68,12 +70,7 @@ impl ResourceRecord {
 
     pub fn serialize(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let mut buf = Vec::new();
-        // TODO: make use of the util function for encoding domains
-        for part in self.name.split('.') {
-            buf.push(part.len() as u8);
-            buf.extend(part.as_bytes());
-        }
-        buf.push(0);
+        buf.extend(util::encode_domain(self.name.clone())?);
         buf.extend(&self.rtype.to_be_bytes());
         buf.extend(&self.rclass.to_be_bytes());
         buf.extend(&self.ttl.to_be_bytes());

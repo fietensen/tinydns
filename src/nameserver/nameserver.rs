@@ -1,4 +1,4 @@
-use crate::{database::{Database, RecordQuery}, protocol::{answer::AnswerEntry, packet::Question}};
+use crate::{database::{Database, RecordEntity, RecordQuery}, protocol::{answer::AnswerEntry, packet::Question}};
 
 pub struct Nameserver<'a> {
     db: &'a Database
@@ -27,11 +27,28 @@ impl<'a> Nameserver<'a> {
         Some(AnswerEntry{
             authoritive: true,
             resource: Some(
-                self.db.query_record(&query)
+                self.query_record(&query)
                     .await?
+                    .serialize()
                     .with_name(question.name())
                 ),
             ..Default::default()
         })
     }
+
+    /*
+        Query a record
+    */
+    pub async fn query_record(&self, record_query: &RecordQuery) -> Option<RecordEntity> {
+        Some(record_query._fetch_one(self.db.get_pool(), self.db.config_dns_tbl()).await?)
+    }
+
+    /*
+
+    */
+    pub async fn insert_record(&self, record: RecordEntity) -> Result<(), Box<dyn std::error::Error>> {
+        record._insert(self.db.get_pool(), self.db.config_dns_tbl()).await
+    }
+
+
 }
