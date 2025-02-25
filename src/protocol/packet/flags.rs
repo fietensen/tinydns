@@ -52,6 +52,7 @@ impl ResponseCode {
 
 #[repr(u16)]
 #[derive(Default, Debug)]
+#[allow(unused)]
 pub enum Flags {
     QR = 1 << 15,
     AA = 1 << 10,
@@ -127,6 +128,7 @@ impl From<u16> for HeaderFlags {
 }
 
 #[derive(Debug)]
+#[allow(unused)]
 pub struct FlagsVec(Vec<Flags>);
 
 impl From<u16> for FlagsVec {

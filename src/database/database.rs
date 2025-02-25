@@ -16,6 +16,7 @@ impl Database {
         })
     }
 
+    #[allow(unused)] // TODO: this might come in handy if we want to chain "virtual" nameservers (e.g. for blocklists)
     pub async fn init_mem() -> Result<Self, Box<dyn std::error::Error>> {
         let db_pool = sqlx::SqlitePool::connect("sqlite::memory:").await?;
 

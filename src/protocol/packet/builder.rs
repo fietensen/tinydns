@@ -42,18 +42,8 @@ impl PacketBuilder {
         self
     }
 
-    pub fn with_qentry(mut self, qentry: Question) -> Self {
-        self.questions.push(qentry);
-        self
-    }
-
     pub fn with_qentries(mut self, qentries: Vec<Question>) -> Self {
         self.questions.extend(qentries);
-        self
-    }
-
-    pub fn with_aentry(mut self, aentry: ResourceRecord) -> Self {
-        self.answers.push(aentry);
         self
     }
 
@@ -62,18 +52,8 @@ impl PacketBuilder {
         self
     }
 
-    pub fn with_authentry(mut self, authentry: ResourceRecord) -> Self {
-        self.authorities.push(authentry);
-        self
-    }
-
     pub fn with_authentries(mut self, authentries: Vec<ResourceRecord>) -> Self {
         self.answers.extend(authentries);
-        self
-    }
-
-    pub fn with_addentry(mut self, addentry: ResourceRecord) -> Self {
-        self.additionals.push(addentry);
         self
     }
 

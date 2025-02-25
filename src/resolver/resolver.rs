@@ -48,11 +48,6 @@ impl Resolver {
         Ok(packet_builder.build().serialize()?)
     }
 
-    pub async fn resolve(&self, questions: Vec<Question>) -> Option<AnswerEntry> {
-        // TODO: Implement resolving questions
-        None
-    }
-
     /*
         Intended for questions that should be delegated to fallback dns
     */

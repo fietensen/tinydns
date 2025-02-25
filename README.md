@@ -1,5 +1,10 @@
 # tinydns
 
+## Current Status
+
+This Project is still a WIP. As I currently have a pretty busy schedule updates
+might be sporadic.
+
 ## Goal
 
 The goal of this application is to serve as a hybrid DNS server (i.e. implementing both, resolver and name server capabilities).
@@ -15,8 +20,9 @@ The main motivation for tinydns is the capability to block troublesome / malicio
 ### To-Do
 - [ ] Add truncation support for large datagrams
 - [ ] Add Message Compression
+- [ ] Add Web Interface
 
-Find more TODOs by running
+Find more TODOs by running the following in the project directory:
 ```sh
-grep --include="*.rs" -rn "TODO"
+grep --include="*.rs" -rni "todo"
 ```

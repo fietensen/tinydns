@@ -17,11 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // create local nameserver
     let nameserver = Nameserver::new(&db);
 
-    nameserver.insert_record(RecordEntity::default()
-        .with_domain_name("test.fietensen.de".into())
-        .with_record_type(RecordType::CNAME)
-        .with_record_value(util::encode_domain("log.fietensen.de".into()).unwrap())).await.unwrap();
-
     // create resolver
     let dns_resolver =
         resolver::Resolver::default().with_fallback_server(("8.8.8.8".to_string(), 53));
