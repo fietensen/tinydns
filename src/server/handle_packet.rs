@@ -42,9 +42,10 @@ pub async fn answer_batch(questions: Vec<Question>, config: &ServerConfig) -> Ve
             delegated_questions.push(question);
         }
     }
-    println!("Resolving recursively");
-    answers.extend(config.resolver().resolve_recursive(questions).await);
+    log::trace!("Resolving {} question:s recursively", delegated_questions.len());
+    answers.extend(config.resolver().resolve_recursive(delegated_questions).await);
 
+    log::info!("Resolved {} quesions", questions.len());
     answers
 }
 
@@ -60,10 +61,11 @@ pub async fn handle_packet(
     let recursion_desired =
         HeaderFlags::from(packet.header.flags).1 & (Flags::RD as u16) == (Flags::RD as u16);
 
+    log::trace!("Handling {} question:s", questions.len());
     if recursion_desired {
         let answers = answer_batch(questions.clone(), config).await;
         for answer in answers {
-            authoritive = authoritive & answer.authoritive;
+            authoritive = authoritive && answer.authoritive;
 
             // add authorities that can answer the question
             if let Some(aauth) = answer.authority {

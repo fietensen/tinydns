@@ -20,16 +20,17 @@ pub async fn send_packet(
     match response {
         Ok(data) => {
             if let Err(e) = server.send_to(&data, client).await {
-                eprintln!("Failed to send response: {}", e);
+                log::error!("Failed to send response: {}", e);
             }
         }
-        Err(e) => eprintln!("Failed to serialize response packet: {}", e),
+        Err(e) => log::error!("Failed to serialize response packet: {}", e),
     }
 
     Ok(())
 }
 
 pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::Error>> {
+
     let server =
         tokio::net::UdpSocket::bind(format!("{}:{}", config.listen_addr(), config.udp_port()))
             .await?;
@@ -39,7 +40,7 @@ pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::
 
         if let Ok((size, client)) = server.recv_from(&mut buf).await {
             let data = &buf[..size];
-            println!("Received {} bytes", size);
+            log::trace!("Received {} bytes from {}:{}", size, client.ip(), client.port());
 
             // not even a query id was sent that could
             // be used to return a meaningful error
@@ -51,6 +52,7 @@ pub async fn serve_udp(config: &ServerConfig) -> Result<(), Box<dyn std::error::
 
             // couldn't parse received packet
             if !packet_deserialized.is_ok() {
+                log::warn!("Received malformed packet. Trying to reconstruct and answer.");
                 if let Ok(header) = PacketHeader::deserialize(data) {
                     // try and preserve header
                     let header_flags: HeaderFlags = header.flags.into();
