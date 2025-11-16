@@ -30,7 +30,6 @@ pub async fn send_packet(
 }
 
 pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std::error::Error>> {
-
     let server =
         tokio::net::UdpSocket::bind(format!("{}:{}", config.listen_addr(), config.udp_port()))
             .await?;
@@ -40,7 +39,12 @@ pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std:
 
         if let Ok((size, client)) = server.recv_from(&mut buf).await {
             let data = &buf[..size];
-            log::trace!("Received {} bytes from {}:{}", size, client.ip(), client.port());
+            log::trace!(
+                "Received {} bytes from {}:{}",
+                size,
+                client.ip(),
+                client.port()
+            );
 
             // not even a query id was sent that could
             // be used to return a meaningful error
@@ -94,10 +98,39 @@ pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std:
             }
             let packet_deserialized = packet_deserialized.unwrap();
 
-            if let Ok(response_packet) = handle_packet(packet_deserialized.clone(), config).await {
+            match handle_packet(packet_deserialized.clone(), config).await {
+                Ok(response_packet) => {
+                    let _ = send_packet(&server, client, response_packet).await;
+                }
+
+                Err(err) => {
+                    log::trace!("Could not answer a single question (total failure): {}", err);
+                    let _ = send_packet(
+                        &server,
+                        client,
+                        PacketBuilder::new()
+                            .with_flags(
+                                HeaderFlags::new()
+                                    .with_opcode(
+                                        HeaderFlags::from(packet_deserialized.header.flags).0,
+                                    )
+                                    .with_rcode(ResponseCode::NameError)
+                                    .with_flag(Flags::QR)
+                                    .with_flag(Flags::RA),
+                            )
+                            .with_id(packet_deserialized.header.id)
+                            .with_qentries(packet_deserialized.questions)
+                            .build(),
+                    )
+                    .await;
+                }
+            }
+
+            /*if let Ok(response_packet) = handle_packet(packet_deserialized.clone(), config).await {
                 let _ = send_packet(&server, client, response_packet).await;
             } else {
                 // construct fail-answer if no question could be answered
+                log::trace!("Could not answer a single question (total failure)");
                 let _ = send_packet(
                     &server,
                     client,
@@ -114,7 +147,7 @@ pub async fn serve_udp<'a>(config: &ServerConfig<'a>) -> Result<(), Box<dyn std:
                         .build(),
                 )
                 .await;
-            }
+            }*/
         }
     }
 }

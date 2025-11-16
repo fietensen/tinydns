@@ -19,12 +19,14 @@ impl<'a> Nameserver<'a> {
             .with_domain_name(question.name())
             .with_record_type(question.qtype());
 
+        log::trace!("trying to answer question");
         // TODO?: Support qclasses other than IN and ANY 
         if question.qclass() != 1 && question.qclass() != 255 {
+            log::trace!("refused to answer question, as qclass ne 1 and qclass ne 255");
             return None;
         }
 
-        Some(AnswerEntry{
+        let res  = Some(AnswerEntry{
             authoritive: true,
             resource: Some(
                 self.query_record(&query)
@@ -33,7 +35,11 @@ impl<'a> Nameserver<'a> {
                     .with_name(question.name())
                 ),
             ..Default::default()
-        })
+        });
+
+        log::trace!("providing answer: {:?}", res);
+
+        return res;
     }
 
     /*

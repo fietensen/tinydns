@@ -56,6 +56,7 @@ impl RecordQuery {
 
         builder.push(" LIMIT 1");
 
+        log::trace!("querying domain name {} with record type {:?}", self.domain_name()?, self.record_type()?);
         Some(
             builder.build_query_as().fetch_one(db).await.ok()?
         )

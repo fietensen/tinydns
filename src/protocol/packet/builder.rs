@@ -1,3 +1,5 @@
+use log::log;
+
 use super::{
     flags::HeaderFlags, header::PacketHeader, packet::Packet, question::Question,
     resource_record::ResourceRecord,
@@ -67,7 +69,7 @@ impl PacketBuilder {
         self.header.ancount = self.answers.len() as u16;
         self.header.nscount = self.authorities.len() as u16;
         self.header.arcount = self.additionals.len() as u16;
-
+        
         Packet {
             header: self.header,
             questions: self.questions,

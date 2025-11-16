@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // create resolver
     let dns_resolver =
-        resolver::Resolver::default().with_fallback_server(("8.8.8.8".to_string(), 53));
+        resolver::Resolver::default();//.with_fallback_server(("8.8.8.8".to_string(), 53));
 
     let config = server::ServerConfig::default()
         .with_resolver(dns_resolver)

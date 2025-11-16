@@ -1,6 +1,6 @@
 use super::packet::ResourceRecord;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct AnswerEntry {
     pub resource: Option<ResourceRecord>,
     pub authoritive: bool,

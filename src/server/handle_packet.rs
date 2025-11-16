@@ -1,11 +1,11 @@
 use crate::protocol::{
-        answer::AnswerEntry,
-        packet::{
-            flags::{Flags, HeaderFlags, ResponseCode},
-            Packet, PacketBuilder, Question, ResourceRecord,
-        },
-        util,
-    };
+    answer::AnswerEntry,
+    packet::{
+        flags::{Flags, HeaderFlags, ResponseCode},
+        Packet, PacketBuilder, Question, ResourceRecord,
+    },
+    util,
+};
 
 use super::ServerConfig;
 
@@ -15,7 +15,6 @@ use super::ServerConfig;
 pub async fn answer_question<'a>(question: Question, config: &ServerConfig<'a>) -> AnswerEntry {
     if let Some(nameserver) = config.nameserver() {
         if let Some(answer) = nameserver.try_answer(question.clone()).await {
-            log::info!("Answered question locally");
             return answer;
         }
     }
@@ -29,7 +28,10 @@ pub async fn answer_question<'a>(question: Question, config: &ServerConfig<'a>) 
 /*
     Batch-answer questions. Recursion should be desired.
 */
-pub async fn answer_batch<'a>(questions: Vec<Question>, config: &ServerConfig<'a>) -> Vec<AnswerEntry> {
+pub async fn answer_batch<'a>(
+    questions: Vec<Question>,
+    config: &ServerConfig<'a>,
+) -> Vec<AnswerEntry> {
     let mut delegated_questions = Vec::new();
     let mut answers = Vec::new();
 
@@ -44,13 +46,21 @@ pub async fn answer_batch<'a>(questions: Vec<Question>, config: &ServerConfig<'a
         }
     } else {
         // No nameserver configured, delegate ALL questions
-        log::trace!("Resolving {} question:s recursively", delegated_questions.len());
+        log::trace!(
+            "Resolving {} question:s recursively",
+            delegated_questions.len()
+        );
         answers.extend(config.resolver().resolve_recursive(questions).await);
         return answers;
     }
-    
+
     if !delegated_questions.is_empty() {
-        answers.extend(config.resolver().resolve_recursive(delegated_questions).await);
+        answers.extend(
+            config
+                .resolver()
+                .resolve_recursive(delegated_questions)
+                .await,
+        );
     }
 
     log::info!("Resolved {} questions", questions.len());
